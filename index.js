@@ -24,10 +24,41 @@ async function run() {
         await client.connect();
         const database = client.db("volunteer-network");
         const volunteersCollection = database.collection("volunteers");
+        const eventsCollection = database.collection("events");
+
+        //add a event
+        app.post('/addevents', async (req, res) => {
+            const event = req.body
+            const result = await eventsCollection.insertOne(event)
+            res.json(result)
+        })
+
+        //get all events
+        app.get('/events', async (req, res) => {
+            const cursor = eventsCollection.find({})
+            const result = await cursor.toArray()
+            res.json(result)
+
+        })
+        //get event by search
+        app.get("/searchEvent", async (req, res) => {
+            const result = await eventsCollection.find({
+                title: { $regex: req.query.search },
+            }).toArray();
+            res.send(result);
+            console.log(result);
+        });
 
 
+        //delete an event
+        app.delete('/deleteEvent/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjecId(id) };
+            const result = await eventsCollection.deleteOne(query);
+            res.send(result)
+        })
 
-        //Api POST
+        //add a volunteer
         app.post('/volunteers', async (req, res) => {
             const volunteer = req.body
 
@@ -36,7 +67,7 @@ async function run() {
             res.json(result)
         })
 
-        //API GET
+        // GET all volunteer
 
         app.get('/volunteers', async (req, res) => {
 
@@ -46,7 +77,7 @@ async function run() {
         })
 
 
-        //API GET A ITEM
+        //API GET A volunteer
         app.get('/volunteers/:id', async (req, res) => {
 
             const id = req.params.id
@@ -54,7 +85,13 @@ async function run() {
             const result = await volunteersCollection.findOne(query)
             res.json(result)
         })
-
+        //delete a volunteer
+        app.delete('/deleteVolunteer/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjecId(id) };
+            const result = await volunteersCollection.deleteOne(query);
+            res.send(result)
+        })
 
 
 
